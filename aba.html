@@ -14,12 +14,13 @@
 </head>
 <body>
 <div class="card">
-  <h2>📲 បើកកម្មវិធី ABA</h2>
+  <h2 id="title">📲 បើកកម្មវិធី ABA</h2>
   <p id="msg">កំពុងបើកកម្មវិធី ABA…</p>
   <a id="open" class="btn" href="#">បើក ABA ដើម្បីបង់ប្រាក់</a>
-  <p>បើមិនបើក សូមត្រឡប់ទៅ Telegram រក្សាទុករូប QR ហើយស្កេនក្នុង ABA។</p>
+  <p id="hint">បើមិនបើក សូមត្រឡប់ទៅ Telegram រក្សាទុករូប QR ហើយស្កេនក្នុង ABA។</p>
 </div>
 <script>
+  // Only ABA PayWay deep links are allowed, so this page cannot be used to open anything else.
   var PREFIX = "abamobilebank://ababank.com?type=payway&qrcode=";
   var d = new URLSearchParams(location.search).get("d") || "";
   var btn = document.getElementById("open");
@@ -27,6 +28,21 @@
   if (d.indexOf(PREFIX) === 0) {
     btn.href = d;
     setTimeout(function () { location.href = d; }, 300);
+    // When the user comes back from ABA, show a thank-you screen.
+    var left = false;
+    function thanks() {
+      document.getElementById("title").textContent = "🙏 សូមអរគុណ!";
+      msg.textContent = "ប្រសិនបើអ្នកបានបង់ប្រាក់រួច សូមត្រឡប់ទៅ Telegram ដើម្បីមើលការបញ្ជាក់ ✅ (bot នឹងផ្ញើសារទទួលបានការបង់ប្រាក់ស្វ័យប្រវត្តិ)";
+      btn.textContent = "បើក ABA ម្តងទៀត";
+      btn.style.background = "#6b7280";
+      document.getElementById("hint").textContent = "អ្នកអាចបិទទំព័រនេះ ហើយត្រឡប់ទៅ Telegram បាន។";
+    }
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) { left = true; }
+      else if (left) { thanks(); }
+    });
+    window.addEventListener("pagehide", function () { left = true; });
+    window.addEventListener("pageshow", function () { if (left) { thanks(); } });
   } else {
     msg.textContent = "តំណមិនត្រឹមត្រូវ សូមត្រឡប់ទៅ Telegram ហើយស្កេន QR។";
     msg.className = "err";
